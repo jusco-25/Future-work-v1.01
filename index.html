@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#00ff9d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>FUTURE WORK - Orientation</title>
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2300ff9d'/%3E%3Ctext x='50' y='70' text-anchor='middle' fill='%23000' font-size='60'%3E💼%3C/text%3E%3C/svg%3E">
+  <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22FUTURE%20WORK%22,%22short_name%22:%22FutureWork%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%230a0f0a%22,%22theme_color%22:%22%2300ff9d%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20fill='%2300ff9d'/%3E%3Ctext%20x='50'%20y='70'%20text-anchor='middle'%20fill='%23000'%20font-size='60'%3E💼%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22any%22}]}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyA65zrYwAHCjoxmWGyW4hYGGbt0Y2jpNR4",
+      authDomain: "future-work-app-cea8b.firebaseapp.com",
+      projectId: "future-work-app-cea8b",
+      storageBucket: "future-work-app-cea8b.firebasestorage.app",
+      messagingSenderId: "398428199869",
+      appId: "1:398428199869:web:59e736b4a51011f487d0d4"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+    
+    window.firebase = { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove };
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Segoe UI', sans-serif; }
+    body { background: linear-gradient(135deg, #0a0f0a, #0a1a0f); color: #00ff9d; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .page { display: none; width: 100%; max-width: 900px; text-align: center; animation: fadeIn 0.5s; }
+    .active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    h1 { font-size: 2.5rem; text-shadow: 0 0 20px #00ff9d; }
+    h2 { font-size: 1.8rem; text-shadow: 0 0 10px #00ff9d; margin-bottom: 15px; }
+    .logo { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #00ff9d, #00cc7a); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px #00ff9d; }
+    .logo i { font-size: 3rem; color: #000; }
+    .btn-principal { background: linear-gradient(135deg, #00ff9d, #00cc7a); color: #000; border: none; border-radius: 50px; padding: 12px 30px; font-size: 1rem; font-weight: bold; cursor: pointer; margin: 10px; }
+    .btn-second { background: rgba(255,255,255,0.1); border: 1px solid #00ff9d; color: #00ff9d; padding: 10px 20px; border-radius: 50px; cursor: pointer; }
+    .lang-selector { position: fixed; top: 10px; right: 10px; background: #1a2a1a; padding: 8px 12px; border-radius: 30px; z-index: 100; display: flex; gap: 8px; }
+    .lang-selector button { background: transparent; border: none; color: #00ff9d; cursor: pointer; font-size: 0.8rem; padding: 4px 8px; border-radius: 20px; }
+    .lang-selector button.active { background: #00ff9d; color: #000; }
+    .connexion-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 80%; max-width: 300px; margin: 10px auto; padding: 12px; border-radius: 12px; cursor: pointer; color: white; background: #4285F4; border: none; }
+    .question { background: rgba(17,17,17,0.9); padding: 15px; margin: 15px 0; border: 1px solid #00ff9d; border-radius: 12px; text-align: left; }
+    .question p { color: #00ff9d; font-weight: bold; margin-bottom: 10px; }
+    .question label { display: block; margin: 8px 0; color: #ccc; cursor: pointer; }
+    .question input { margin-right: 10px; accent-color: #00ff9d; }
+    .question input[type="text"] { width: 100%; padding: 10px; background: #0a0a0a; border: 1px solid #00ff9d; border-radius: 8px; color: #fff; }
+    .erreur-msg { color: #ff6b6b; margin-top: 15px; display: none; }
+    .metier-suggere { background: rgba(17,17,17,0.95); padding: 15px; margin: 12px 0; border-left: 4px solid #00ff9d; border-radius: 10px; text-align: left; }
+    .metier-suggere strong { font-size: 1.2rem; color: #00ff9d; }
+    .badge { background: rgba(0,255,157,0.2); padding: 4px 10px; border-radius: 20px; display: inline-block; margin-top: 8px; font-size: 0.8rem; }
+    .affiliate-section, .menu-section { margin-top: 30px; padding: 15px; background: rgba(0,255,157,0.1); border-radius: 12px; }
+    .affiliate-link { background: #2a2a2a; color: white; padding: 10px; border-radius: 10px; text-decoration: none; display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+    .affiliate-link i { color: #00ff9d; }
+    .partage-buttons { display: flex; justify-content: center; gap: 12px; margin: 15px 0; flex-wrap: wrap; }
+    .partage-btn { padding: 8px 18px; border-radius: 50px; color: white; cursor: pointer; border: none; }
+    .partage-btn.whatsapp { background: #25D366; }
+    .partage-btn.instagram { background: linear-gradient(45deg, #405DE6, #833AB4, #FD1D1D); }
+    .partage-btn.facebook { background: #1877F2; }
+    .user-info { background: rgba(0,255,157,0.2); padding: 10px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .user-info img { width: 40px; height: 40px; border-radius: 50%; }
+    .history-section { margin-top: 20px; padding: 15px; background: rgba(0,255,157,0.1); border-radius: 12px; max-height: 300px; overflow-y: auto; }
+    .history-item { background: #1a2a1a; padding: 10px; margin: 8px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .footer-links { margin-top: 20px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+    .footer-links a { color: #888; text-decoration: none; font-size: 0.8rem; cursor: pointer; }
+    @media (max-width: 600px) { h1 { font-size: 2rem; } h2 { font-size: 1.5rem; } .connexion-btn { width: 95%; } }
+  </style>
+</head>
+<body>
+
+<div class="lang-selector">
+  <button onclick="changeLang('fr')" id="langFr">🇫🇷 FR</button>
+  <button onclick="changeLang('en')" id="langEn">🇬🇧 EN</button>
+  <button onclick="changeLang('es')" id="langEs">🇪🇸 ES</button>
+</div>
+
+<!-- PAGE 1 ACCUEIL -->
+<div class="page active" id="page1">
+  <div class="logo"><i class="fas fa-briefcase"></i></div>
+  <h1 id="welcomeTitle">FUTURE WORK</h1>
+  <p id="welcomeText" style="color:#88ffbb; margin:15px 0">Découvre le métier qui te correspond</p>
+  <div id="userStatus"></div>
+  <button class="btn-principal" onclick="goToPage(3)" id="startBtn">COMMENCER</button>
+  <div class="footer-links">
+    <a onclick="goToPage(5)" id="aboutLink">À propos</a>
+    <a onclick="goToPage(6)" id="termsLink">Conditions</a>
+  </div>
+</div>
+    <!-- PAGE 2 CONNEXION -->
+<div class="page" id="page2">
+  <h2 id="loginTitle">CONNEXION</h2>
+  <button id="googleLoginBtn" class="connexion-btn"><i class="fab fa-google"></i> <span id="googleBtnText">Se connecter avec Google</span></button>
+  <div style="margin-top:20px;"><button class="btn-second" onclick="goToPage(3)" id="skipBtn">Passer</button></div>
+</div>
+
+<!-- PAGE 3 QUESTIONNAIRE -->
+<div class="page" id="page3">
+  <h2 id="quizTitle">TEST D'ORIENTATION</h2>
+  <p id="quizSub" style="color:#ccc;">Choisis ce qui te correspond (plusieurs choix possibles)</p>
+  <div id="questions-container"></div>
+  <button class="btn-principal" onclick="calculerResultats()" id="seeResultsBtn">VOIR RÉSULTATS</button>
+  <div id="erreur-questionnaire" class="erreur-msg">❌ Réponds à toutes les questions !</div>
+</div>
+
+<!-- PAGE 4 RÉSULTATS -->
+<div class="page" id="page4">
+  <h2 id="resultsTitle">🎯 TES MÉTIERS</h2>
+  <div id="resultats-container"></div>
+  
+  <div class="affiliate-section">
+    <h3 id="trainingTitle">🎓 Formations</h3>
+    <a href="https://openclassrooms.com" target="_blank" class="affiliate-link"><i class="fas fa-laptop-code"></i> OpenClassrooms</a>
+    <a href="https://www.coursera.org" target="_blank" class="affiliate-link"><i class="fas fa-graduation-cap"></i> Coursera</a>
+    <a href="https://www.udemy.com" target="_blank" class="affiliate-link"><i class="fas fa-chalkboard-user"></i> Udemy</a>
+    <p id="affiliateNote" style="color:#888; font-size:11px; margin-top:10px;">En t'inscrivant, tu soutiens FUTURE WORK</p>
+  </div>
+  
+  <div class="partage-buttons">
+    <button class="partage-btn whatsapp" onclick="partager('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+    <button class="partage-btn instagram" onclick="partager('instagram')"><i class="fab fa-instagram"></i> Instagram</button>
+    <button class="partage-btn facebook" onclick="partager('facebook')"><i class="fab fa-facebook-f"></i> Facebook</button>
+  </div>
+  
+  <div id="historySection" style="display:none;" class="history-section">
+    <h3 id="historyTitle">📜 Historique</h3>
+    <div id="historyList"></div>
+    <button class="btn-second" onclick="clearHistory()" id="clearHistoryBtn">🗑️ Effacer tout l'historique</button>
+  </div>
+  
+  <button class="btn-principal" style="background:transparent; border:2px solid #00ff9d; color:#00ff9d; margin-top:15px;" onclick="recommencer()" id="restartBtn">RECOMMENCER</button>
+</div>
+
+<!-- PAGE 5 À PROPOS -->
+<div class="page" id="page5">
+  <h2 id="aboutTitle">ℹ️ À PROPOS</h2>
+  <div style="background:rgba(17,17,17,0.9); border-radius:12px; padding:20px; text-align:left;">
+    <p style="color:#00ff9d;" id="aboutName">FUTURE WORK - Orientation professionnelle</p>
+    <p id="aboutDesc" style="color:#ccc; margin:10px 0">📌 43 métiers • 7 questions • Test personnalisé</p>
+    <p id="aboutVersion" style="color:#ccc;">📌 Version 1.01 • Connexion Google • Historique sauvegardé</p>
+  </div>
+  <button class="btn-principal" style="margin-top:20px;" onclick="goToPage(1)" id="backBtn1">RETOUR</button>
+</div>
+
+<!-- PAGE 6 CONDITIONS -->
+<div class="page" id="page6">
+  <h2 id="termsTitle">📜 CONDITIONS</h2>
+  <div style="background:rgba(17,17,17,0.9); border-radius:12px; padding:20px; text-align:left;">
+    <p id="terms1" style="color:#ccc;">• Application gratuite, résultats indicatifs</p>
+    <p id="terms2" style="color:#ccc;">• Données sauvegardées uniquement si connecté</p>
+    <p id="terms3" style="color:#ccc;">• Liens affiliés : commission sur achats</p>
+  </div>
+  <button class="btn-principal" style="margin-top:20px;" onclick="goToPage(1)" id="backBtn2">RETOUR</button>
+</div>
+
+<div id="installBanner" style="position:fixed; bottom:20px; left:20px; right:20px; background:#1a2a1a; border:1px solid #00ff9d; border-radius:12px; padding:12px; display:none; align-items:center; justify-content:space-between; z-index:1000;">
+  <span id="installText" style="color:white;">📱 Installer FUTURE WORK</span>
+  <button id="installBtn" style="background:#00ff9d; color:#000; border:none; padding:8px 16px; border-radius:50px;">Installer</button>
+</div>
+
+<script>
+// ========== TRADUCTIONS ==========
+const translations = {
+  fr: {
+    welcomeTitle: "FUTURE WORK", welcomeText: "Découvre le métier qui te correspond", startBtn: "COMMENCER",
+    aboutLink: "À propos", termsLink: "Conditions", loginTitle: "CONNEXION", googleBtnText: "Se connecter avec Google",
+    skipBtn: "Passer", quizTitle: "TEST D'ORIENTATION", quizSub: "Choisis ce qui te correspond (plusieurs choix possibles)",
+    seeResultsBtn: "VOIR RÉSULTATS", resultsTitle: "🎯 TES MÉTIERS", trainingTitle: "🎓 Formations",
+    affiliateNote: "En t'inscrivant, tu soutiens FUTURE WORK", historyTitle: "📜 Historique", clearHistoryBtn: "🗑️ Effacer tout l'historique",
+    restartBtn: "RECOMMENCER", aboutTitle: "ℹ️ À PROPOS", aboutName: "FUTURE WORK - Orientation professionnelle",
+    aboutDesc: "📌 43 métiers • 7 questions • Test personnalisé", aboutVersion: "📌 Version 1.01 • Connexion Google • Historique sauvegardé",
+    backBtn1: "RETOUR", termsTitle: "📜 CONDITIONS", terms1: "• Application gratuite, résultats indicatifs",
+    terms2: "• Données sauvegardées uniquement si connecté", terms3: "• Liens affiliés : commission sur achats",
+    backBtn2: "RETOUR", installText: "📱 Installer FUTURE WORK", shareText: "🎯 Mes résultats FUTURE WORK ! Découvre ton métier idéal",
+    errorComplete: "❌ Réponds à toutes les questions !"
+  },
+  en: {
+    welcomeTitle: "FUTURE WORK", welcomeText: "Discover the career that suits you", startBtn: "START",
+    aboutLink: "About", termsLink: "Terms", loginTitle: "LOGIN", googleBtnText: "Sign in with Google",
+    skipBtn: "Skip", quizTitle: "ORIENTATION TEST", quizSub: "Choose what suits you (multiple choices possible)",
+    seeResultsBtn: "SEE RESULTS", resultsTitle: "🎯 YOUR CAREERS", trainingTitle: "🎓 Training",
+    affiliateNote: "By signing up, you support FUTURE WORK", historyTitle: "📜 History", clearHistoryBtn: "🗑️ Clear all history",
+    restartBtn: "RESTART", aboutTitle: "ℹ️ ABOUT", aboutName: "FUTURE WORK - Career orientation",
+    aboutDesc: "📌 43 careers • 7 questions • Personalized test", aboutVersion: "📌 Version 1.01 • Google Login • Saved history",
+    backBtn1: "BACK", termsTitle: "📜 TERMS", terms1: "• Free app, indicative results",
+    terms2: "• Data saved only if logged in", terms3: "• Affiliate links: commission on purchases",
+    backBtn2: "BACK", installText: "📱 Install FUTURE WORK", shareText: "🎯 My FUTURE WORK results! Discover your ideal career",
+    errorComplete: "❌ Answer all questions!"
+  },
+  es: {
+    welcomeTitle: "FUTURE WORK", welcomeText: "Descubre la profesión que te conviene", startBtn: "COMENZAR",
+    aboutLink: "Acerca de", termsLink: "Términos", loginTitle: "INICIAR SESIÓN", googleBtnText: "Iniciar sesión con Google",
+    skipBtn: "Omitir", quizTitle: "TEST DE ORIENTACIÓN", quizSub: "Elige lo que te conviene (múltiples opciones)",
+    seeResultsBtn: "VER RESULTADOS", resultsTitle: "🎯 TUS PROFESIONES", trainingTitle: "🎓 Formación",
+    affiliateNote: "Al registrarte, apoyas FUTURE WORK", historyTitle: "📜 Historial", clearHistoryBtn: "🗑️ Borrar todo el historial",
+    restartBtn: "REINICIAR", aboutTitle: "ℹ️ ACERCA DE", aboutName: "FUTURE WORK - Orientación profesional",
+    aboutDesc: "📌 43 profesiones • 7 preguntas • Test personalizado", aboutVersion: "📌 Versión 1.01 • Conexión Google • Historial guardado",
+    backBtn1: "VOLVER", termsTitle: "📜 TÉRMINOS", terms1: "• App gratuita, resultados indicativos",
+    terms2: "• Datos guardados solo si estás conectado", terms3: "• Enlaces afiliados: comisión en compras",
+    backBtn2: "VOLVER", installText: "📱 Instalar FUTURE WORK", shareText: "🎯 ¡Mis resultados de FUTURE WORK! Descubre tu profesión ideal",
+    errorComplete: "❌ ¡Responde todas las preguntas!"
+  }
+};
+
+let currentLang = 'fr';
+
+function changeLang(lang) {
+  currentLang = lang;
+  const t = translations[lang];
+  document.getElementById('welcomeTitle').innerText = t.welcomeTitle;
+  document.getElementById('welcomeText').innerText = t.welcomeText;
+  document.getElementById('startBtn').innerText = t.startBtn;
+  document.getElementById('aboutLink').innerText = t.aboutLink;
+  document.getElementById('termsLink').innerText = t.termsLink;
+  document.getElementById('loginTitle').innerText = t.loginTitle;
+  document.getElementById('googleBtnText').innerText = t.googleBtnText;
+  document.getElementById('skipBtn').innerText = t.skipBtn;
+  document.getElementById('quizTitle').innerText = t.quizTitle;
+  document.getElementById('quizSub').innerText = t.quizSub;
+  document.getElementById('seeResultsBtn').innerText = t.seeResultsBtn;
+  document.getElementById('resultsTitle').innerText = t.resultsTitle;
+  document.getElementById('trainingTitle').innerText = t.trainingTitle;
+  document.getElementById('affiliateNote').innerText = t.affiliateNote;
+  document.getElementById('historyTitle') && (document.getElementById('historyTitle').innerText = t.historyTitle);
+  document.getElementById('clearHistoryBtn') && (document.getElementById('clearHistoryBtn').innerText = t.clearHistoryBtn);
+  document.getElementById('restartBtn').innerText = t.restartBtn;
+  document.getElementById('aboutTitle').innerText = t.aboutTitle;
+  document.getElementById('aboutName').innerText = t.aboutName;
+  document.getElementById('aboutDesc').innerText = t.aboutDesc;
+  document.getElementById('aboutVersion').innerText = t.aboutVersion;
+  document.getElementById('backBtn1').innerText = t.backBtn1;
+  document.getElementById('termsTitle').innerText = t.termsTitle;
+  document.getElementById('terms1').innerText = t.terms1;
+  document.getElementById('terms2').innerText = t.terms2;
+  document.getElementById('terms3').innerText = t.terms3;
+  document.getElementById('backBtn2').innerText = t.backBtn2;
+  document.getElementById('installText').innerText = t.installText;
+  
+  document.querySelectorAll('.lang-selector button').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(`lang${lang.toUpperCase()}`).classList.add('active');
+}
+// ========== 43 MÉTIERS COMPLETS ==========
+const metiers = [
+  { nom: "Développeur web", desc: "Crée des sites et applications web.", form: "BAC+2 à BAC+5", qual: "Logique, curiosité", sal: "30-50k€/an", mat: ["Maths","Informatique","Anglais"], profil: { env: "Bureau", contact: "Seul", act: ["Intellectuelle","Créative"], etu: "Long", val: "Créer" } },
+  { nom: "Infirmier", desc: "Soigne et accompagne les patients.", form: "BAC+3", qual: "Empathie, rigueur", sal: "22-35k€/an", mat: ["SVT","Chimie","Français"], profil: { env: "Hôpital", contact: "Public", act: ["Manuelle","Relationnelle"], etu: "Moyen", val: "Aider" } },
+  { nom: "Graphiste", desc: "Conçoit des visuels pour les marques.", form: "BAC+2 à BAC+5", qual: "Créativité", sal: "25-45k€/an", mat: ["Arts","Informatique"], profil: { env: "Atelier", contact: "Seul", act: ["Créative"], etu: "Moyen", val: "Créer" } },
+  { nom: "Chanteur", desc: "Interprète des chansons.", form: "Conservatoire", qual: "Voix, sensibilité", sal: "Variable", mat: ["Musique","Français"], profil: { env: "Atelier", contact: "Public", act: ["Créative"], etu: "Peu", val: "Créer" } },
+  { nom: "Dessinateur", desc: "Crée des illustrations, BD.", form: "Beaux-Arts", qual: "Créativité", sal: "25-40k€/an", mat: ["Arts","Français"], profil: { env: "Atelier", contact: "Seul", act: ["Créative"], etu: "Peu", val: "Créer" } },
+  { nom: "Avocat", desc: "Défend ses clients.", form: "BAC+5 droit", qual: "Éloquence", sal: "35-80k€/an", mat: ["Français","Anglais","Histoire"], profil: { env: "Bureau", contact: "Public", act: ["Intellectuelle"], etu: "Long", val: "Aider" } },
+  { nom: "Pilote ligne", desc: "Pilote des avions.", form: "École pilotage", qual: "Sang-froid", sal: "50-150k€/an", mat: ["Maths","Physique","Anglais"], profil: { env: "Extérieur", contact: "Equipe", act: ["Manuelle"], etu: "Long", val: "Argent" } },
+  { nom: "Professeur", desc: "Enseigne et transmet.", form: "BAC+5", qual: "Pédagogie", sal: "25-50k€/an", mat: ["Français","Maths"], profil: { env: "Bureau", contact: "Public", act: ["Relationnelle"], etu: "Long", val: "Aider" } },
+  { nom: "Entrepreneur", desc: "Crée son entreprise.", form: "Parcours varié", qual: "Audace", sal: "Variable", mat: ["Économie","Anglais"], profil: { env: "Bureau", contact: "Equipe", act: ["Relationnelle"], etu: "Peu", val: "Argent" } },
+  { nom: "Couturier", desc: "Crée des vêtements.", form: "CAP mode", qual: "Précision", sal: "20-35k€/an", mat: ["Arts","Technique"], profil: { env: "Atelier", contact: "Seul", act: ["Manuelle","Créative"], etu: "Court", val: "Créer" } },
+  { nom: "Pâtissier", desc: "Prépare des desserts.", form: "CAP", qual: "Créativité", sal: "20-35k€/an", mat: ["Maths","Chimie"], profil: { env: "Atelier", contact: "Seul", act: ["Manuelle","Créative"], etu: "Court", val: "Créer" } },
+  { nom: "Mécanicien", desc: "Répare les véhicules.", form: "CAP", qual: "Minutie", sal: "22-35k€/an", mat: ["Maths","Physique"], profil: { env: "Atelier", contact: "Seul", act: ["Manuelle"], etu: "Court", val: "Argent" } },
+  { nom: "Agriculteur", desc: "Exploite des terres.", form: "Bac pro", qual: "Résistance", sal: "20-40k€/an", mat: ["SVT","Chimie"], profil: { env: "Extérieur", contact: "Seul", act: ["Manuelle"], etu: "Court", val: "Aider" } },
+  { nom: "Écrivain", desc: "Écrit des livres.", form: "Autodidacte", qual: "Imagination", sal: "Variable", mat: ["Français","Philo"], profil: { env: "Bureau", contact: "Seul", act: ["Créative"], etu: "Peu", val: "Créer" } },
+  { nom: "Journaliste", desc: "Transmet l'info.", form: "BAC+3", qual: "Curiosité", sal: "25-45k€/an", mat: ["Français","Anglais","Histoire"], profil: { env: "Bureau", contact: "Public", act: ["Intellectuelle"], etu: "Long", val: "Aider" } },
+  { nom: "Présentateur TV", desc: "Anime des émissions.", form: "Écoles journalisme", qual: "Charisme", sal: "30-200k€", mat: ["Français","Anglais"], profil: { env: "Bureau", contact: "Public", act: ["Relationnelle"], etu: "Long", val: "Argent" } },
+  { nom: "Chimiste", desc: "Étudie la matière.", form: "BAC+5", qual: "Rigueur", sal: "30-60k€/an", mat: ["Chimie","Maths","Physique"], profil: { env: "Bureau", contact: "Equipe", act: ["Intellectuelle"], etu: "Long", val: "Aider" } },
+  { nom: "Animateur radio", desc: "Anime des émissions radio.", form: "Écoles radio", qual: "Voix, humour", sal: "25-80k€", mat: ["Français","Musique"], profil: { env: "Bureau", contact: "Public", act: ["Créative"], etu: "Moyen", val: "Créer" } },
+  { nom: "Caméraman", desc: "Filme pour le cinéma.", form: "BTS audiovisuel", qual: "Précision", sal: "25-45k€/an", mat: ["Technique","Info"], profil: { env: "Atelier", contact: "Equipe", act: ["Manuelle","Créative"], etu: "Moyen", val: "Créer" } },
+  { nom: "Joueur foot", desc: "Footballeur pro.", form: "Centre formation", qual: "Sportif", sal: "20k€ à millions", mat: ["EPS"], profil: { env: "Extérieur", contact: "Equipe", act: ["Manuelle"], etu: "Peu", val: "Argent" } },
+  { nom: "Joueur tennis", desc: "Tennisman pro.", form: "Entraînement", qual: "Mental", sal: "Variable", mat: ["EPS"], profil: { env: "Extérieur", contact: "Seul", act: ["Manuelle"], etu: "Peu", val: "Argent" } },
+  { nom: "Joueur basket", desc: "Basketteur pro.", form: "Centre formation", qual: "Sportif", sal: "30k€ à millions", mat: ["EPS"], profil: { env: "Extérieur", contact: "Equipe", act: ["Manuelle"], etu: "Peu", val: "Argent" } },
+  { nom: "Joueur handball", desc: "Handballeur pro.", form: "Centre formation", qual: "Sportif", sal: "25-200k€", mat: ["EPS"], profil: { env: "Extérieur", contact: "Equipe", act: ["Manuelle"], etu: "Peu", val: "Argent" } },
+  { nom: "Pilote course", desc: "Pilote auto pro.", form: "Pilotage", qual: "Réflexes", sal: "Variable", mat: ["EPS","Physique"], profil: { env: "Extérieur", contact: "Equipe", act: ["Manuelle"], etu: "Peu", val: "Argent" } },
+  { nom: "Hacker éthique", desc: "Teste la sécurité.", form: "Certifications", qual: "Logique", sal: "40-100k€/an", mat: ["Info","Maths","Anglais"], profil: { env: "Bureau", contact: "Seul", act: ["Intellectuelle"], etu: "Moyen", val: "Argent" } },
+  { nom: "Électronicien", desc: "Conçoit des circuits.", form: "BTS", qual: "Précision", sal: "28-45k€/an", mat: ["Physique","Maths"], profil: { env: "Bureau", contact: "Seul", act: ["Intellectuelle"], etu: "Moyen", val: "Argent" } },
+  { nom: "Chef cuisinier", desc: "Dirige la cuisine.", form: "CAP", qual: "Leadership", sal: "30-60k€/an", mat: ["Cuisine","Gestion"], profil: { env: "Atelier", contact: "Equipe", act: ["Manuelle","Créative"], etu: "Moyen", val: "Créer" } },
+  { nom: "Acteur", desc: "Joue des rôles.", form: "Cours art dramatique", qual: "Expressivité", sal: "Variable", mat: ["Théâtre","Français"], profil: { env: "Atelier", contact: "Public", act: ["Créative"], etu: "Peu", val: "Créer" } },
+  { nom: "Architecte", desc: "Conçoit des bâtiments.", form: "BAC+5", qual: "Créativité", sal: "30-60k€/an", mat: ["Maths","Dessin","Physique"], profil: { env: "Bureau", contact: "Equipe", act: ["Créative"], etu: "Long", val: "Créer" } },
+  { nom: "Policier", desc: "Assure la sécurité.", form: "Concours", qual: "Courage", sal: "25-50k€/an", mat: ["EPS","Français","Droit"], profil: { env: "Extérieur", contact: "Public", act: ["Manuelle"], etu: "Moyen", val: "Aider" } },
+  { nom: "Économiste", desc: "Analyse l'économie.", form: "BAC+5", qual: "Logique", sal: "35-80k€/an", mat: ["Maths","Éco","Anglais"], profil: { env: "Bureau", contact: "Equipe", act: ["Intellectuelle"], etu: "Long", val: "Argent" } },
+  { nom: "Comptable", desc: "Gère les comptes.", form: "BAC+2", qual: "Rigueur", sal: "28-50k€/an", mat: ["Maths","Compta"], profil: { env: "Bureau", contact: "Seul", act: ["Intellectuelle"], etu: "Moyen", val: "Argent" } },
+  { nom: "Monteur vidéo", desc: "Monte des vidéos.", form: "BTS", qual: "Patience", sal: "25-45k€/an", mat: ["Info","Technique"], profil: { env: "Bureau", contact: "Seul", act: ["Créative"], etu: "Moyen", val: "Créer" } },
+  { nom: "Coiffeur", desc: "Coupe les cheveux.", form: "CAP", qual: "Créativité", sal: "20-35k€/an", mat: ["Technique","Chimie"], profil: { env: "Atelier", contact: "Public", act: ["Manuelle"], etu: "Court", val: "Aider" } },
+  { nom: "Hôtesse air", desc: "Accueille en vol.", form: "Formation", qual: "Sourire", sal: "25-45k€/an", mat: ["Anglais","Français","Géo"], profil: { env: "Extérieur", contact: "Public", act: ["Relationnelle"], etu: "Moyen", val: "Argent" } },
+  { nom: "Menuisier", desc: "Fabrique des meubles.", form: "CAP", qual: "Précision", sal: "22-38k€/an", mat: ["Dessin","Maths"], profil: { env: "Atelier", contact: "Seul", act: ["Manuelle","Créative"], etu: "Court", val: "Créer" } },
+  { nom: "Plombier", desc: "Installe des canalisations.", form: "CAP", qual: "Rigueur", sal: "25-45k€/an", mat: ["Maths","Physique"], profil: { env: "Extérieur", contact: "Public", act: ["Manuelle"], etu: "Court", val: "Argent" } },
+  { nom: "Photographe", desc: "Prend des photos.", form: "Écoles photo", qual: "Créativité", sal: "25-40k€/an", mat: ["Technique","Physique"], profil: { env: "Extérieur", contact: "Seul", act: ["Créative"], etu: "Moyen", val: "Créer" } },
+  { nom: "Secrétaire", desc: "Gère l'administratif.", form: "Bac+2", qual: "Organisation", sal: "22-35k€/an", mat: ["Français","Anglais","Info"], profil: { env: "Bureau", contact: "Public", act: ["Relationnelle"], etu: "Court", val: "Aider" } },
+  { nom: "Réceptionniste", desc: "Accueille les clients.", form: "Bac", qual: "Sourire", sal: "20-30k€/an", mat: ["Anglais","Français"], profil: { env: "Bureau", contact: "Public", act: ["Relationnelle"], etu: "Court", val: "Aider" } },
+  { nom: "Cordonnier", desc: "Répare les chaussures.", form: "CAP", qual: "Minutieux", sal: "20-30k€/an", mat: ["Technique"], profil: { env: "Atelier", contact: "Seul", act: ["Manuelle"], etu: "Court", val: "Aider" } },
+  { nom: "Ingénieur IA", desc: "Développe l'IA.", form: "BAC+5", qual: "Logique", sal: "45-100k€/an", mat: ["Maths","Info","Anglais"], profil: { env: "Bureau", contact: "Equipe", act: ["Intellectuelle"], etu: "Long", val: "Argent" } },
+  { nom: "Gestionnaire", desc: "Gère une équipe.", form: "BAC+3", qual: "Leadership", sal: "30-60k€/an", mat: ["Compta","Éco"], profil: { env: "Bureau", contact: "Equipe", act: ["Relationnelle"], etu: "Long", val: "Argent" } },
+  { nom: "Fabricant jouets", desc: "Fabrique des jouets.", form: "CAP", qual: "Créativité", sal: "22-38k€/an", mat: ["Dessin","Maths"], profil: { env: "Atelier", contact: "Equipe", act: ["Manuelle","Créative"], etu: "Moyen", val: "Créer" } }
+];
+
+// ========== QUESTIONS ==========
+const questions = [
+  { id:1, texte:"1. Environnement de travail préféré ? (plusieurs)", type:"checkbox", options:["Bureau","Extérieur","Hôpital","Atelier"] },
+  { id:2, texte:"2. Comment aimes-tu travailler ? (plusieurs)", type:"checkbox", options:["Seul","En équipe","Au contact du public"] },
+  { id:3, texte:"3. Type d'activité qui te motive ? (plusieurs)", type:"checkbox", options:["Manuelle","Intellectuelle","Créative","Relationnelle"] },
+  { id:4, texte:"4. Niveau d'études souhaité ?", type:"radio", options:["Court (CAP/Bac)","Moyen (Bac+2/3)","Long (Bac5+)","Peu importe"] },
+  { id:5, texte:"5. Qu'est-ce qui est le plus important ? (plusieurs)", type:"checkbox", options:["Aider les gens","Gagner de l'argent","Créer des choses","Temps libre"] },
+  { id:6, texte:"6. Matières où tu es à l'aise ?", type:"text", placeholder:"Ex: Maths, Anglais, SVT..." },
+  { id:7, texte:"7. Matières que tu aimes ?", type:"text", placeholder:"Ex: Histoire, Musique, Arts..." }
+];
+let currentUser = null;
+let currentResults = null;
+
+function afficherQuestionnaire() {
+  const container = document.getElementById("questions-container");
+  if(!container) return;
+  container.innerHTML = "";
+  questions.forEach(q => {
+    const div = document.createElement("div");
+    div.className = "question";
+    div.innerHTML = `<p>${q.texte}</p>`;
+    if(q.type === "checkbox") {
+      q.options.forEach(opt => { div.innerHTML += `<label><input type="checkbox" name="q${q.id}" value="${opt}"> ${opt}</label>`; });
+    } else if(q.type === "radio") {
+      q.options.forEach(opt => { div.innerHTML += `<label><input type="radio" name="q${q.id}" value="${opt}"> ${opt}</label>`; });
+    } else {
+      div.innerHTML += `<input type="text" name="q${q.id}" placeholder="${q.placeholder}">`;
+    }
+    container.appendChild(div);
+  });
+}
+
+function getReponses() {
+  const reponses = {};
+  for(let i=1;i<=7;i++) {
+    if(i===4) {
+      const selected = document.querySelector(`input[name="q${i}"]:checked`);
+      if(!selected) return null;
+      reponses[`q${i}`] = selected.value;
+    } else if(i===6||i===7) {
+      const input = document.querySelector(`input[name="q${i}"]`);
+      if(!input || input.value.trim()==="") return null;
+      reponses[`q${i}`] = input.value.trim().toLowerCase();
+    } else {
+      const checks = document.querySelectorAll(`input[name="q${i}"]:checked`);
+      if(checks.length===0) return null;
+      reponses[`q${i}`] = Array.from(checks).map(c=>c.value);
+    }
+  }
+  return reponses;
+}
+
+async function sauvegarderHistorique(userId, resultats) {
+  if(!userId) return;
+  const { db, doc, setDoc, getDoc, updateDoc, arrayUnion } = window.firebase;
+  const userRef = doc(db, "users", userId);
+  const userSnap = await getDoc(userRef);
+  if(userSnap.exists()) {
+    await updateDoc(userRef, {
+      history: arrayUnion({ date: new Date().toISOString(), results: resultats })
+    });
+  } else {
+    await setDoc(userRef, {
+      history: [{ date: new Date().toISOString(), results: resultats }]
+    });
+  }
+}
+
+async function chargerHistorique(userId) {
+  if(!userId) return [];
+  const { db, doc, getDoc } = window.firebase;
+  const userRef = doc(db, "users", userId);
+  const userSnap = await getDoc(userRef);
+  if(userSnap.exists()) {
+    return userSnap.data().history || [];
+  }
+  return [];
+}
+
+async function effacerHistorique(userId) {
+  if(!userId) return;
+  const { db, doc, updateDoc } = window.firebase;
+  const userRef = doc(db, "users", userId);
+  await updateDoc(userRef, { history: [] });
+}
+
+function afficherHistorique(history) {
+  const section = document.getElementById("historySection");
+  const list = document.getElementById("historyList");
+  if(!history || history.length === 0) {
+    section.style.display = "none";
+    return;
+  }
+  section.style.display = "block";
+  list.innerHTML = "";
+  history.slice().reverse().forEach((item, idx) => {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    const date = new Date(item.date).toLocaleDateString();
+    const results = item.results.map((m,i) => `${i+1}. ${m.nom}`).join(" | ");
+    div.innerHTML = `<span><strong>${date}</strong><br><small>${results}</small></span>
+                     <button class="btn-second" onclick="supprimerHistoriqueItem(${idx})" style="padding:5px 10px;">🗑️</button>`;
+    list.appendChild(div);
+  });
+}
+
+async function supprimerHistoriqueItem(index) {
+  if(!currentUser) return;
+  const history = await chargerHistorique(currentUser.uid);
+  history.splice(history.length - 1 - index, 1);
+  const { db, doc, updateDoc } = window.firebase;
+  const userRef = doc(db, "users", currentUser.uid);
+  await updateDoc(userRef, { history: history });
+  afficherHistorique(await chargerHistorique(currentUser.uid));
+}
+
+async function clearHistory() {
+  if(!currentUser) return;
+  await effacerHistorique(currentUser.uid);
+  afficherHistorique([]);
+  alert(translations[currentLang].clearHistoryBtn);
+}
+
+async function calculerResultats() {
+  const erreurDiv = document.getElementById("erreur-questionnaire");
+  erreurDiv.style.display = "none";
+  const reponses = getReponses();
+  if(!reponses) { erreurDiv.style.display = "block"; erreurDiv.innerText = translations[currentLang].errorComplete; return; }
+  
+  const matieresFortes = reponses.q6 ? reponses.q6.split(",").map(m=>m.trim()) : [];
+  const matieresAimees = reponses.q7 ? reponses.q7.split(",").map(m=>m.trim()) : [];
+  
+  const scores = metiers.map(m => {
+    let score = 0;
+    if(reponses.q1.includes(m.profil.env)) score += 5;
+    if(reponses.q2.includes(m.profil.contact)) score += 4;
+    if(m.profil.act.some(a=>reponses.q3.includes(a))) score += 4;
+    if(m.profil.etu === reponses.q4 || reponses.q4 === "Peu importe") score += 3;
+    if(reponses.q5.includes(m.profil.val)) score += 3;
+    const matM = m.mat.map(mm=>mm.toLowerCase());
+    matieresFortes.forEach(mf=>{ if(matM.some(mm=>mm.includes(mf))) score+=6; });
+    matieresAimees.forEach(ma=>{ if(matM.some(mm=>mm.includes(ma))) score+=2; });
+    return {...m, score};
+  });
+  
+  const top3 = scores.sort((a,b)=>b.score-a.score).slice(0,3);
+  currentResults = top3;
+  
+  if(currentUser) {
+    await sauvegarderHistorique(currentUser.uid, top3.map(m=>({ nom: m.nom, score: m.score })));
+    afficherHistorique(await chargerHistorique(currentUser.uid));
+  }
+  
+  const container = document.getElementById("resultats-container");
+  container.innerHTML = "";
+  top3.forEach((m,i)=>{
+    container.innerHTML += `<div class="metier-suggere"><strong>${i+1}. ${m.nom}</strong><p>📝 ${m.desc}</p><p>🎓 ${m.form}</p><p>⭐ ${m.qual}</p><p>💰 ${m.sal}</p><p>📚 ${m.mat.join(", ")}</p><span class="badge">Score: ${m.score} pts</span></div>`;
+  });
+  goToPage(4);
+}
+
+function partager(reseau) {
+  let texte = translations[currentLang].shareText;
+  if(currentResults) {
+    texte = "🎯 " + currentResults.map((m,i)=>`${i+1}. ${m.nom}`).join(" | ") + "\n" + translations[currentLang].shareText;
+  }
+  if(reseau === "whatsapp") window.open(`https://wa.me/?text=${encodeURIComponent(texte)}`,"_blank");
+  else if(reseau === "instagram") { alert("📸 Copie: " + texte); navigator.clipboard.writeText(texte); }
+  else { alert("📘 Copie: " + texte); navigator.clipboard.writeText(texte); }
+}
+
+function goToPage(num) {
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(`page${num}`).classList.add("active");
+  window.scrollTo({top:0});
+}
+
+function recommencer() {
+  document.querySelectorAll("input").forEach(i=>{
+    if(i.type==="radio"||i.type==="checkbox") i.checked=false;
+    if(i.type==="text") i.value="";
+  });
+  afficherQuestionnaire();
+  goToPage(1);
+}
+// Firebase Auth
+const { auth, provider, signInWithPopup, signOut, onAuthStateChanged, db, doc, getDoc } = window.firebase;
+
+document.getElementById("googleLoginBtn")?.addEventListener("click", async () => {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    alert(`Bienvenue ${result.user.displayName || "utilisateur"} !`);
+    goToPage(3);
+  } catch(e) { alert("Erreur: " + e.message); }
+});
+
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  const statusDiv = document.getElementById("userStatus");
+  if(statusDiv) {
+    if(user) {
+      const history = await chargerHistorique(user.uid);
+      afficherHistorique(history);
+      statusDiv.innerHTML = `<div class="user-info"><img src="${user.photoURL || ''}" onerror="this.style.display='none'"><span>👋 ${user.displayName || user.email}</span><button class="btn-second" onclick="signOut(auth); location.reload()">Déconnexion</button></div>`;
+    } else {
+      statusDiv.innerHTML = `<button class="btn-second" onclick="goToPage(2)">🔐 Se connecter</button>`;
+      document.getElementById("historySection").style.display = "none";
+    }
+  }
+});
+
+// PWA Installation
+let deferredPrompt;
+const installBanner = document.getElementById("installBanner");
+const installBtn = document.getElementById("installBtn");
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferredPrompt = e; if(installBanner) installBanner.style.display = "flex"; });
+installBtn?.addEventListener("click", async () => { if(deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if(outcome === "accepted") installBanner.style.display = "none"; deferredPrompt = null; } });
+
+// Service Worker pour mode hors ligne
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(console.log);
+}
+
+// Initialisation
+window.onload = () => {
+  afficherQuestionnaire();
+  changeLang('fr');
+};
+</script>
+</body>
+</html>
